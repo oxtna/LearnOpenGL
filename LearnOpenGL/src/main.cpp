@@ -5,6 +5,7 @@
 #include <string>
 #include <sstream>
 #include <cmath>
+#include "shader.h"
 
 const unsigned int DEFAULT_WIDTH = 800;
 const unsigned int DEFAULT_HEIGHT = 600;
@@ -22,7 +23,7 @@ int main()
     GLFWwindow* window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
-        std::cout << "Failed to create GLFW window" << std::endl;
+        std::cerr << "Error: Failed to create GLFW window" << std::endl;
         glfwTerminate();
         return -1;
     }
@@ -31,76 +32,12 @@ int main()
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cout << "Failed to initialize GLAD" << std::endl;
+        std::cerr << "Error: Failed to initialize GLAD" << std::endl;
         glfwTerminate();
         return -1;
     }
 
-    GLuint shaderProgram;
-    {
-        GLint success;
-        const GLsizei INFO_LOG_SIZE = 512;
-        GLchar infoLog[INFO_LOG_SIZE]{};
-
-        GLuint vertexShader;
-        {
-            std::ifstream shaderFile("main.vert");
-            std::ostringstream buffer;
-            buffer << shaderFile.rdbuf();
-
-            const std::string& shaderSource = buffer.str();
-            const GLchar* const shaders[] = {shaderSource.c_str()};
-            const GLint lengths[] = {static_cast<GLint>(shaderSource.length())};
-
-            vertexShader = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vertexShader, 1, shaders, lengths);
-            glCompileShader(vertexShader);
-
-            GLint success;
-            GLchar infoLog[512]{};
-            glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-            if (!success)
-            {
-                glGetShaderInfoLog(vertexShader, sizeof(infoLog) / sizeof(GLchar), NULL, infoLog);
-                std::cerr << "Error: Vertex shader compilation failed\n" << infoLog << std::endl;
-            }
-        }
-        GLuint fragmentShader;
-        {
-            std::ifstream shaderFile("main.frag");
-            std::ostringstream buffer;
-            buffer << shaderFile.rdbuf();
-
-            const std::string& shaderSource = buffer.str();
-            const GLchar* const shaders[] = {shaderSource.c_str()};
-            const GLint lengths[] = {static_cast<GLint>(shaderSource.length())};
-
-            fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fragmentShader, 1, shaders, lengths);
-            glCompileShader(fragmentShader);
-
-            glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-            if (!success)
-            {
-                glGetShaderInfoLog(fragmentShader, INFO_LOG_SIZE, NULL, infoLog);
-                std::cerr << "Error: Fragment shader compilation failed\n" << infoLog << std::endl;
-            }
-        }
-        shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-        glLinkProgram(shaderProgram);
-
-        glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-        if (!success)
-        {
-            glGetProgramInfoLog(shaderProgram, INFO_LOG_SIZE, NULL, infoLog);
-            std::cerr << "Error: Program linking failed\n" << infoLog << std::endl;
-        }
-
-        glDeleteShader(vertexShader);
-        glDeleteShader(fragmentShader);
-    }
+    Shader shader("main.vert", "main.frag");
 
     // clang-format off
     const GLfloat vertices[] = {
@@ -138,11 +75,8 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        float timeValue = glfwGetTime();
-        GLfloat greenValue = (std::sin(timeValue) / 2.0f) + 0.5f;
-        GLint ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
-        glUseProgram(shaderProgram);
-        glUniform4f(ourColorLocation, 0.0f, greenValue, 0.0f, 0.0f);
+        double timeValue = glfwGetTime();
+        shader.use();
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -153,7 +87,6 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
-    glDeleteProgram(shaderProgram);
 
     glfwTerminate();
     return 0;
