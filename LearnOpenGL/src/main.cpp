@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include <sstream>
+#include <cmath>
 
 const unsigned int DEFAULT_WIDTH = 800;
 const unsigned int DEFAULT_HEIGHT = 600;
@@ -102,12 +103,12 @@ int main()
     }
 
     // clang-format off
-    const float vertices[] = {
-        -0.5f, -0.5f,  0.0f,
-         0.5f, -0.5f,  0.0f,
-         0.0f,  0.5f,  0.0f,
+    const GLfloat vertices[] = {
+        -0.5f, -0.5f,  0.0f,  1.0f, 0.0f, 0.0f,
+         0.5f, -0.5f,  0.0f,  0.0f, 1.0f, 0.0f,
+         0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f,
     };
-    const unsigned int indices[] = {
+    const GLuint indices[] = {
         0, 1, 2,
     };
     // clang-format on
@@ -123,8 +124,12 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), static_cast<void*>(0));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(
+        1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))
+    );
+    glEnableVertexAttribArray(1);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -133,7 +138,11 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        float timeValue = glfwGetTime();
+        GLfloat greenValue = (std::sin(timeValue) / 2.0f) + 0.5f;
+        GLint ourColorLocation = glGetUniformLocation(shaderProgram, "ourColor");
         glUseProgram(shaderProgram);
+        glUniform4f(ourColorLocation, 0.0f, greenValue, 0.0f, 0.0f);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
@@ -152,7 +161,7 @@ int main()
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 }
 
 void processInput(GLFWwindow* window)
