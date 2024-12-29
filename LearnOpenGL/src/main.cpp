@@ -1,10 +1,14 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb/stb_image.h>
+
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <sstream>
 #include <cmath>
+
 #include "shader.h"
 
 const unsigned int DEFAULT_WIDTH = 800;
@@ -39,14 +43,23 @@ int main()
 
     Shader shader("main.vert", "main.frag");
 
+    // Vertex data layout
+    // +-----------------+-----------------------------+
+    // | Position (vec3) |  Texture coordinates (vec2) |
+    // +-----------------+-----------------------------+
     // clang-format off
     const GLfloat vertices[] = {
-        -0.5f, -0.5f,  0.0f,  1.0f, 0.0f, 0.0f,
-         0.5f, -0.5f,  0.0f,  0.0f, 1.0f, 0.0f,
-         0.0f,  0.5f,  0.0f,  0.0f, 0.0f, 1.0f,
+        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f,
+         0.5f, -0.5f, 0.0f,   1.0f, 0.0f,
+         0.0f,  0.5f, 0.0f,   0.5f, 1.0f,
     };
     const GLuint indices[] = {
         0, 1, 2,
+    };
+    const GLfloat textureCoordinates[] = {
+        0.0f, 0.0f,
+        1.0f, 0.0f,
+        0.5f, 1.0f,
     };
     // clang-format on
 
@@ -61,12 +74,35 @@ int main()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)0);
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(
-        1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))
+        1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat))
     );
     glEnableVertexAttribArray(1);
+
+    int width, height, colorChannelCount;
+    stbi_set_flip_vertically_on_load(1);
+    auto data = stbi_load("container.jpg", &width, &height, &colorChannelCount, 0);
+
+    GLuint texture;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    if (data != NULL)
+    {
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cerr << "Error: Failed to load texture" << std::endl;
+    }
+
+    stbi_image_free(data);
 
     while (!glfwWindowShouldClose(window))
     {
@@ -76,7 +112,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         double timeValue = glfwGetTime();
+
         shader.use();
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 

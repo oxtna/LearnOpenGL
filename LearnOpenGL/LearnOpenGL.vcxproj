@@ -158,6 +158,9 @@
   <ItemGroup>
     <ClInclude Include="src\shader.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="container.jpg" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
