@@ -1,5 +1,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
@@ -112,9 +115,11 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         double timeValue = glfwGetTime();
-
+        glm::mat4 transform = glm::mat4(1.0f);
+        transform =
+            glm::rotate(transform, static_cast<float>(timeValue), glm::vec3(0.0f, 0.0f, 1.0f));
         shader.use();
-
+        shader.setUniformMat4("transform", transform);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
