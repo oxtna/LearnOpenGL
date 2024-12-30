@@ -44,6 +44,8 @@ int main()
         return -1;
     }
 
+    glEnable(GL_DEPTH_TEST);
+
     Shader shader("main.vert", "main.frag");
 
     // Vertex data layout
@@ -51,18 +53,55 @@ int main()
     // | Position (vec3) |  Texture coordinates (vec2) |
     // +-----------------+-----------------------------+
     // clang-format off
-    const GLfloat vertices[] = {
-        -0.5f, -0.5f, 0.0f,   0.0f, 0.0f,
-         0.5f, -0.5f, 0.0f,   1.0f, 0.0f,
-         0.0f,  0.5f, 0.0f,   0.5f, 1.0f,
+    GLfloat vertices[] = {
+        -0.5f,  0.5f, -0.5f,   0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,   0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,   1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   1.0f, 1.0f,
+
+         0.5f,  0.5f,  0.5f,   0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,   0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,   1.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f,   0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,   0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,   1.0f, 1.0f,
+
+         0.5f,  0.5f, -0.5f,   0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   1.0f, 1.0f,
+
+        -0.5f,  0.5f,  0.5f,   0.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,   0.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,   1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,   1.0f, 1.0f,
+
+         0.5f, -0.5f,  0.5f,   0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,   0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,   1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,   1.0f, 1.0f,
     };
-    const GLuint indices[] = {
+    GLuint indices[] = {
         0, 1, 2,
-    };
-    const GLfloat textureCoordinates[] = {
-        0.0f, 0.0f,
-        1.0f, 0.0f,
-        0.5f, 1.0f,
+        2, 3, 0,
+
+        4, 5, 6,
+        6, 7, 4,
+
+        8, 9, 10,
+        10, 11, 8,
+        
+        12, 13, 14,
+        14, 15, 12,
+
+        16, 17, 18,
+        18, 19, 16,
+
+        20, 21, 22,
+        22, 23, 20,
     };
     // clang-format on
 
@@ -112,18 +151,24 @@ int main()
         processInput(window);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         double timeValue = glfwGetTime();
-        glm::mat4 transform = glm::mat4(1.0f);
-        transform =
-            glm::rotate(transform, static_cast<float>(timeValue), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::rotate(
+            model, static_cast<float>(timeValue) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)
+        );
+        glm::mat4 view = glm::mat4(1.0f);
+        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
         shader.use();
-        shader.setUniformMat4("transform", transform);
+        shader.setUniformMat4("model", model);
+        shader.setUniformMat4("view", view);
+        shader.setUniformMat4("projection", projection);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
 
         glfwSwapBuffers(window);
         glfwPollEvents();
