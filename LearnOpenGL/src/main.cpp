@@ -14,10 +14,28 @@
 
 #include "shader.h"
 
-const unsigned int DEFAULT_WIDTH = 800;
-const unsigned int DEFAULT_HEIGHT = 600;
+constexpr unsigned int DEFAULT_WIDTH = 800;
+constexpr unsigned int DEFAULT_HEIGHT = 600;
+
+float lastFrameTime = 0.0f;
+float deltaTime = 0.0f;
+
+bool mousePressed = false;
+double lastMouseX = 0.0;
+double lastMouseY = 0.0;
+
+glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+float fieldOfView = 45.0f;
+float yaw = -90.0f;
+float pitch = 0.0f;
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int modifiers);
+void cursorPosCallback(GLFWwindow* window, double xPosition, double yPosition);
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 void processInput(GLFWwindow* window);
 
 int main()
@@ -36,6 +54,9 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
+    glfwSetMouseButtonCallback(window, mouseButtonCallback);
+    glfwSetCursorPosCallback(window, cursorPosCallback);
+    glfwSetScrollCallback(window, scrollCallback);
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
@@ -153,14 +174,22 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        double timeValue = glfwGetTime();
+        float currentFrameTime = static_cast<float>(glfwGetTime());
+        deltaTime = currentFrameTime - lastFrameTime;
+        lastFrameTime = currentFrameTime;
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(
-            model, static_cast<float>(timeValue) * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)
+            model,
+            static_cast<float>(currentFrameTime) * glm::radians(50.0f),
+            glm::vec3(0.5f, 1.0f, 0.0f)
         );
-        glm::mat4 view = glm::mat4(1.0f);
-        view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-        glm::mat4 projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+        glm::mat4 projection = glm::perspective(
+            glm::radians(fieldOfView),
+            static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT),
+            0.1f,
+            100.0f
+        );
         shader.use();
         shader.setUniformMat4("model", model);
         shader.setUniformMat4("view", view);
@@ -178,6 +207,7 @@ int main()
     glDeleteBuffers(1, &VBO);
     glDeleteBuffers(1, &EBO);
 
+    glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
 }
@@ -187,10 +217,88 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
 }
 
+void mouseButtonCallback(GLFWwindow* window, int button, int action, int modifiers)
+{
+    if (button == GLFW_MOUSE_BUTTON_LEFT)
+    {
+        if (action == GLFW_PRESS)
+        {
+            mousePressed = true;
+        }
+        else
+        {
+            mousePressed = false;
+        }
+    }
+}
+
+void cursorPosCallback(GLFWwindow* window, double xPosition, double yPosition)
+{
+    constexpr float sensitivity = 0.1f;
+    if (mousePressed)
+    {
+        float deltaX = static_cast<float>(lastMouseX - xPosition);
+        float deltaY = static_cast<float>(yPosition - lastMouseY);
+        deltaX *= sensitivity;
+        deltaY *= sensitivity;
+        yaw += static_cast<float>(deltaX);
+        pitch += static_cast<float>(deltaY);
+        if (pitch > 89.0f)
+        {
+            pitch = 89.0f;
+        }
+        else if (pitch < -89.0f)
+        {
+            pitch = -89.0f;
+        }
+        glm::vec3 front(
+            std::cosf(glm::radians(yaw)) * std::cosf(glm::radians(pitch)),
+            std::sinf(glm::radians(pitch)),
+            std::sinf(glm::radians(yaw)) * std::cosf(glm::radians(pitch))
+        );
+        cameraFront = glm::normalize(front);
+    }
+    lastMouseX = xPosition;
+    lastMouseY = yPosition;
+}
+
+void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
+{
+    fieldOfView -= static_cast<float>(yOffset);
+    if (fieldOfView < 10.0f)
+    {
+        fieldOfView = 10.0f;
+    }
+    else if (fieldOfView > 45.0f)
+    {
+        fieldOfView = 45.0f;
+    }
+    std::cerr << "FOV: " << fieldOfView << std::endl;
+}
+
 void processInput(GLFWwindow* window)
 {
+    constexpr float cameraSpeed = 1.5f;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, 1);
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        cameraPosition += deltaTime * cameraSpeed * cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        cameraPosition -= deltaTime * cameraSpeed * cameraFront;
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cameraPosition -=
+            deltaTime * cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cameraPosition +=
+            deltaTime * cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
     }
 }

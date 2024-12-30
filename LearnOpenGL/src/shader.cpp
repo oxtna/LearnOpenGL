@@ -40,7 +40,7 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
 
 #ifdef _DEBUG
     GLint success;
-    const GLsizei INFO_LOG_SIZE = 512;
+    constexpr GLsizei INFO_LOG_SIZE = 512;
     GLchar infoLog[INFO_LOG_SIZE]{};
 #endif
 
