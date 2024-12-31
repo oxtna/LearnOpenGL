@@ -34,7 +34,7 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     catch (const std::ifstream::failure& e)
     {
 #ifdef _DEBUG
-        std::cerr << "Error: Shader source file reading failed\n" << e.what() << std::endl;
+        std::cerr << "Error: Shader source file reading failed\n" << e.what() << '\n';
 #endif
     }
 
@@ -54,7 +54,7 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     if (!success)
     {
         glGetShaderInfoLog(vertexShader, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Vertex shader compilation failed\n" << infoLog << std::endl;
+        std::cerr << "Error: Vertex shader compilation failed\n" << infoLog << '\n';
     }
 #endif
 
@@ -68,7 +68,7 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Fragment shader compilation failed\n" << infoLog << std::endl;
+        std::cerr << "Error: Fragment shader compilation failed\n" << infoLog << '\n';
     }
 #endif
 
@@ -82,7 +82,7 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     if (!success)
     {
         glGetProgramInfoLog(_id, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Program linking failed\n" << infoLog << std::endl;
+        std::cerr << "Error: Program linking failed\n" << infoLog << '\n';
     }
 #endif
 
@@ -95,14 +95,70 @@ Shader::~Shader()
     glDeleteProgram(_id);
 }
 
-void Shader::id(GLuint id)
+void Shader::use()
 {
-    _id = id;
+    glUseProgram(_id);
 }
 
 GLuint Shader::id() const
 {
     return _id;
+}
+
+GLint Shader::getUniformInt(const char* name) const
+{
+    GLint value;
+    glGetUniformiv(_id, glGetUniformLocation(_id, name), &value);
+    return value;
+}
+
+GLfloat Shader::getUniformFloat(const char* name) const
+{
+    GLfloat value;
+    glGetUniformfv(_id, glGetUniformLocation(_id, name), &value);
+    return value;
+}
+
+glm::vec2 Shader::getUniformVec2(const char* name) const
+{
+    glm::vec2 value;
+    glGetnUniformfv(_id, glGetUniformLocation(_id, name), 2, glm::value_ptr(value));
+    return value;
+}
+
+glm::vec3 Shader::getUniformVec3(const char* name) const
+{
+    glm::vec3 value;
+    glGetnUniformfv(_id, glGetUniformLocation(_id, name), 2, glm::value_ptr(value));
+    return value;
+}
+
+glm::vec4 Shader::getUniformVec4(const char* name) const
+{
+    glm::vec4 value;
+    glGetnUniformfv(_id, glGetUniformLocation(_id, name), 2, glm::value_ptr(value));
+    return value;
+}
+
+glm::mat2 Shader::getUniformMat2(const char* name) const
+{
+    glm::mat2 value;
+    glGetnUniformfv(_id, glGetUniformLocation(_id, name), 2, glm::value_ptr(value));
+    return value;
+}
+
+glm::mat3 Shader::getUniformMat3(const char* name) const
+{
+    glm::mat3 value;
+    glGetnUniformfv(_id, glGetUniformLocation(_id, name), 2, glm::value_ptr(value));
+    return value;
+}
+
+glm::mat4 Shader::getUniformMat4(const char* name) const
+{
+    glm::mat4 value;
+    glGetnUniformfv(_id, glGetUniformLocation(_id, name), 2, glm::value_ptr(value));
+    return value;
 }
 
 void Shader::setUniformInt(const char* name, GLint value)
@@ -158,9 +214,4 @@ void Shader::setUniformMat3(const char* name, const glm::mat3& mat)
 void Shader::setUniformMat4(const char* name, const glm::mat4& mat)
 {
     glUniformMatrix4fv(glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat));
-}
-
-void Shader::use()
-{
-    glUseProgram(_id);
 }

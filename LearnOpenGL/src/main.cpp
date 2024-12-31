@@ -12,25 +12,21 @@
 #include <sstream>
 #include <cmath>
 
+#include "time.h"
+#include "camera.h"
 #include "shader.h"
 
 constexpr unsigned int DEFAULT_WIDTH = 800;
 constexpr unsigned int DEFAULT_HEIGHT = 600;
 
-float lastFrameTime = 0.0f;
-float deltaTime = 0.0f;
-
 bool mousePressed = false;
 double lastMouseX = 0.0;
 double lastMouseY = 0.0;
 
-glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-
-float fieldOfView = 45.0f;
-float yaw = -90.0f;
-float pitch = 0.0f;
+Camera camera(
+    glm::vec3(0.0f, 0.0f, 3.0f), Camera::DefaultWorldUp, Camera::DefaultYaw, Camera::DefaultPitch,
+    Camera::DefaultFieldOfView
+);
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int modifiers);
@@ -48,7 +44,7 @@ int main()
     GLFWwindow* window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
-        std::cerr << "Error: Failed to create GLFW window" << std::endl;
+        std::cerr << "Error: Failed to create GLFW window\n";
         glfwTerminate();
         return -1;
     }
@@ -60,7 +56,7 @@ int main()
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cerr << "Error: Failed to initialize GLAD" << std::endl;
+        std::cerr << "Error: Failed to initialize GLAD\n";
         glfwTerminate();
         return -1;
     }
@@ -162,7 +158,7 @@ int main()
     }
     else
     {
-        std::cerr << "Error: Failed to load texture" << std::endl;
+        std::cerr << "Error: Failed to load texture\n";
     }
 
     stbi_image_free(data);
@@ -174,18 +170,13 @@ int main()
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        float currentFrameTime = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
+        Time::update();
+
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(
-            model,
-            static_cast<float>(currentFrameTime) * glm::radians(50.0f),
-            glm::vec3(0.5f, 1.0f, 0.0f)
-        );
-        glm::mat4 view = glm::lookAt(cameraPosition, cameraPosition + cameraFront, cameraUp);
+        model = glm::rotate(model, Time::time() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection = glm::perspective(
-            glm::radians(fieldOfView),
+            glm::radians(camera.fieldOfView()),
             static_cast<float>(DEFAULT_WIDTH) / static_cast<float>(DEFAULT_HEIGHT),
             0.1f,
             100.0f
@@ -234,29 +225,13 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int modifie
 
 void cursorPosCallback(GLFWwindow* window, double xPosition, double yPosition)
 {
-    constexpr float sensitivity = 0.1f;
     if (mousePressed)
     {
         float deltaX = static_cast<float>(lastMouseX - xPosition);
         float deltaY = static_cast<float>(yPosition - lastMouseY);
-        deltaX *= sensitivity;
-        deltaY *= sensitivity;
-        yaw += static_cast<float>(deltaX);
-        pitch += static_cast<float>(deltaY);
-        if (pitch > 89.0f)
-        {
-            pitch = 89.0f;
-        }
-        else if (pitch < -89.0f)
-        {
-            pitch = -89.0f;
-        }
-        glm::vec3 front(
-            std::cosf(glm::radians(yaw)) * std::cosf(glm::radians(pitch)),
-            std::sinf(glm::radians(pitch)),
-            std::sinf(glm::radians(yaw)) * std::cosf(glm::radians(pitch))
-        );
-        cameraFront = glm::normalize(front);
+        deltaX *= camera.Sensitivity;
+        deltaY *= camera.Sensitivity;
+        camera.rotate(deltaX, deltaY);
     }
     lastMouseX = xPosition;
     lastMouseY = yPosition;
@@ -264,41 +239,29 @@ void cursorPosCallback(GLFWwindow* window, double xPosition, double yPosition)
 
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
-    fieldOfView -= static_cast<float>(yOffset);
-    if (fieldOfView < 10.0f)
-    {
-        fieldOfView = 10.0f;
-    }
-    else if (fieldOfView > 45.0f)
-    {
-        fieldOfView = 45.0f;
-    }
-    std::cerr << "FOV: " << fieldOfView << std::endl;
+    camera.fieldOfView(camera.fieldOfView() - static_cast<float>(yOffset));
 }
 
 void processInput(GLFWwindow* window)
 {
-    constexpr float cameraSpeed = 1.5f;
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, 1);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        cameraPosition += deltaTime * cameraSpeed * cameraFront;
+        camera.translate(camera.front() * camera.Speed * Time::deltaTime());
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        cameraPosition -= deltaTime * cameraSpeed * cameraFront;
+        camera.translate(-camera.front() * camera.Speed * Time::deltaTime());
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        cameraPosition -=
-            deltaTime * cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        camera.translate(-camera.right() * camera.Speed * Time::deltaTime());
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        cameraPosition +=
-            deltaTime * cameraSpeed * glm::normalize(glm::cross(cameraFront, cameraUp));
+        camera.translate(camera.right() * camera.Speed * Time::deltaTime());
     }
 }

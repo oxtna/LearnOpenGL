@@ -145,9 +145,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\time.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="main.vert" />
@@ -156,7 +158,9 @@
     <None Include="main.frag" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\shader.h" />
+    <ClInclude Include="src\time.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="container.jpg" />
