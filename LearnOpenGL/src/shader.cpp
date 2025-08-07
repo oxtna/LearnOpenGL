@@ -34,7 +34,8 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     catch (const std::ifstream::failure& e)
     {
 #ifdef _DEBUG
-        std::cerr << "Error: Shader source file reading failed\n" << e.what() << '\n';
+        std::cerr << "Error: Shader source file reading failed\n"
+                  << e.what() << '\n';
 #endif
     }
 
@@ -68,7 +69,8 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Fragment shader compilation failed\n" << infoLog << '\n';
+        std::cerr << "Error: Fragment shader compilation failed\n"
+                  << infoLog << '\n';
     }
 #endif
 
@@ -196,22 +198,30 @@ void Shader::setUniformVec4(const char* name, const glm::vec4& vec)
     glUniform4fv(glGetUniformLocation(_id, name), 1, glm::value_ptr(vec));
 }
 
-void Shader::setUniformVec4(const char* name, GLfloat x, GLfloat y, GLfloat z, GLfloat w)
+void Shader::setUniformVec4(
+    const char* name, GLfloat x, GLfloat y, GLfloat z, GLfloat w
+)
 {
     glUniform4f(glGetUniformLocation(_id, name), x, y, z, w);
 }
 
 void Shader::setUniformMat2(const char* name, const glm::mat2& mat)
 {
-    glUniformMatrix2fv(glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat));
+    glUniformMatrix2fv(
+        glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat)
+    );
 }
 
 void Shader::setUniformMat3(const char* name, const glm::mat3& mat)
 {
-    glUniformMatrix3fv(glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat));
+    glUniformMatrix3fv(
+        glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat)
+    );
 }
 
 void Shader::setUniformMat4(const char* name, const glm::mat4& mat)
 {
-    glUniformMatrix4fv(glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat));
+    glUniformMatrix4fv(
+        glGetUniformLocation(_id, name), 1, GL_FALSE, glm::value_ptr(mat)
+    );
 }

@@ -24,8 +24,8 @@ double lastMouseX = 0.0;
 double lastMouseY = 0.0;
 
 Camera camera(
-    glm::vec3(0.0f, 0.0f, 3.0f), Camera::DefaultWorldUp, Camera::DefaultYaw, Camera::DefaultPitch,
-    Camera::DefaultFieldOfView
+    glm::vec3(0.0f, 0.0f, 3.0f), Camera::DefaultWorldUp, Camera::DefaultYaw,
+    Camera::DefaultPitch, Camera::DefaultFieldOfView
 );
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
@@ -41,7 +41,8 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window =
+        glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
         std::cerr << "Error: Failed to create GLFW window\n";
@@ -153,7 +154,17 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     if (data != NULL)
     {
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RGB,
+            width,
+            height,
+            0,
+            GL_RGB,
+            GL_UNSIGNED_BYTE,
+            data
+        );
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else
@@ -173,7 +184,9 @@ int main()
         Time::update();
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, Time::time() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(
+            model, Time::time() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f)
+        );
         glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection = glm::perspective(
             glm::radians(camera.fieldOfView()),
@@ -188,7 +201,9 @@ int main()
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
         glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0);
+        glDrawElements(
+            GL_TRIANGLES, sizeof(indices) / sizeof(GLuint), GL_UNSIGNED_INT, 0
+        );
 
         glfwSwapBuffers(window);
         glfwPollEvents();

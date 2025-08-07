@@ -17,7 +17,8 @@ Camera::Camera()
 }
 
 Camera::Camera(
-    const glm::vec3& position, const glm::vec3& worldUp, float yaw, float pitch, float fieldOfView
+    const glm::vec3& position, const glm::vec3& worldUp, float yaw, float pitch,
+    float fieldOfView
 )
     : _position(position),
       _front(),
@@ -94,8 +95,8 @@ void Camera::translate(const glm::vec3& translation)
 {
     _position += translation;
 #ifdef _DEBUG
-    std::cerr << "Camera position: (" << _position.x << ", " << _position.y << ", " << _position.z
-              << ")\n";
+    std::cerr << "Camera position: (" << _position.x << ", " << _position.y << ", "
+              << _position.z << ")\n";
 #endif
 }
 
@@ -130,6 +131,7 @@ void Camera::updateDirections()
     _right = glm::normalize(glm::cross(_front, _worldUp));
     _up = glm::normalize(glm::cross(_right, _front));
 #ifdef _DEBUG
-    std::cerr << "Camera front: (" << _front.x << ", " << _front.y << ", " << _front.z << ")\n";
+    std::cerr << "Camera front: (" << _front.x << ", " << _front.y << ", "
+              << _front.z << ")\n";
 #endif
 }

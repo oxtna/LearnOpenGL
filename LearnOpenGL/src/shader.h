@@ -55,7 +55,8 @@ class Shader
     void setUniformVec4(const char* name, const glm::vec4& vec);
     // Set the value of the uniform with the given name in this shader program.
     // Requires using this shader program.
-    void setUniformVec4(const char* name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
+    void
+        setUniformVec4(const char* name, GLfloat x, GLfloat y, GLfloat z, GLfloat w);
     // Set the value of the uniform with the given name in this shader program.
     // Requires using this shader program.
     void setUniformMat2(const char* name, const glm::mat2& mat);
