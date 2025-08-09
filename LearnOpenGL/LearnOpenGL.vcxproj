@@ -152,10 +152,10 @@
     <ClCompile Include="src\time.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="main.vert" />
+    <None Include="main.vert.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="main.frag" />
+    <None Include="main.frag.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\camera.h" />

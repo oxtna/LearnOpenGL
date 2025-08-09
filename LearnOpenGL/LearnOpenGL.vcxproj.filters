@@ -32,10 +32,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="main.frag">
+    <None Include="main.frag.glsl">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="main.vert">
+    <None Include="main.vert.glsl">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

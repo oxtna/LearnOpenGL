@@ -64,7 +64,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
-    Shader shader("main.vert", "main.frag");
+    Shader shader("main.vert.glsl", "main.frag.glsl");
 
     // Vertex data layout
     // +-----------------+-----------------------------+
