@@ -6,6 +6,11 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
+#include <logging/logs.h>
+#include <logging/logger.h>
+#include <logging/severity.h>
+#include <logging/sinks.h>
+
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -36,6 +41,11 @@ void processInput(GLFWwindow* window);
 
 int main()
 {
+#ifdef _DEBUG
+    auto& logger = logging::Logger::Instance();
+    logging::ConsoleSink consoleSink{};
+    logger.addSink(logging::Severity::Debug, &consoleSink);
+#endif
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -44,7 +54,7 @@ int main()
     GLFWwindow* window = glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "LearnOpenGL", NULL, NULL);
     if (window == NULL)
     {
-        std::cerr << "Error: Failed to create GLFW window\n";
+        logging::error("Failed to create GLFW window");
         glfwTerminate();
         return -1;
     }
@@ -56,7 +66,7 @@ int main()
 
     if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
-        std::cerr << "Error: Failed to initialize GLAD\n";
+        logging::error("Error: Failed to initialize GLAD");
         glfwTerminate();
         return -1;
     }
@@ -158,7 +168,7 @@ int main()
     }
     else
     {
-        std::cerr << "Error: Failed to load texture\n";
+        logging::error("Error: Failed to load texture");
     }
 
     stbi_image_free(data);

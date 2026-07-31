@@ -1,5 +1,7 @@
 #include "shader.h"
 #include <glm/gtc/type_ptr.hpp>
+#include <logging/logs.h>
+#include <format>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -12,10 +14,8 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     std::ifstream vertexShaderFile;
     std::ifstream fragmentShaderFile;
 
-#ifdef _DEBUG
     vertexShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     fragmentShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-#endif
 
     try
     {
@@ -33,58 +33,47 @@ Shader::Shader(const char* vertexFilename, const char* fragmentFilename)
     }
     catch (const std::ifstream::failure& e)
     {
-#ifdef _DEBUG
-        std::cerr << "Error: Shader source file reading failed\n" << e.what() << '\n';
-#endif
+        logging::error(std::format("Shader source file reading failed: {}", e.what()));
     }
 
-#ifdef _DEBUG
     GLint success;
     constexpr GLsizei INFO_LOG_SIZE = 512;
     GLchar infoLog[INFO_LOG_SIZE]{};
-#endif
-
     const GLchar* vertexSourceCode = vertexSource.c_str();
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexSourceCode, NULL);
     glCompileShader(vertexShader);
 
-#ifdef _DEBUG
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
         glGetShaderInfoLog(vertexShader, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Vertex shader compilation failed\n" << infoLog << '\n';
+        logging::error(std::format("Vertex shader compilation failed: {}", infoLog));
     }
-#endif
 
     const GLchar* fragmentSourceCode = fragmentSource.c_str();
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragmentSourceCode, NULL);
     glCompileShader(fragmentShader);
 
-#ifdef _DEBUG
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Fragment shader compilation failed\n" << infoLog << '\n';
+        logging::error(std::format("Fragment shader compilation failed: {}", infoLog));
     }
-#endif
 
     _id = glCreateProgram();
     glAttachShader(_id, vertexShader);
     glAttachShader(_id, fragmentShader);
     glLinkProgram(_id);
 
-#ifdef _DEBUG
     glGetProgramiv(_id, GL_LINK_STATUS, &success);
     if (!success)
     {
         glGetProgramInfoLog(_id, INFO_LOG_SIZE, NULL, infoLog);
-        std::cerr << "Error: Program linking failed\n" << infoLog << '\n';
+        logging::error(std::format("Program linking failed: {}", infoLog));
     }
-#endif
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);

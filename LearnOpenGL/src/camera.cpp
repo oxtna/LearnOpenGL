@@ -1,7 +1,8 @@
 #include "camera.h"
 #include <glm/gtc/matrix_transform.hpp>
+#include <logging/logs.h>
 #include <cmath>
-#include <iostream>
+#include <format>
 
 Camera::Camera()
     : _position(DefaultPosition),
@@ -85,18 +86,15 @@ void Camera::fieldOfView(float fieldOfView)
     {
         _fieldOfView = 45.0f;
     }
-#ifdef _DEBUG
-    std::cerr << "Camera field of view: " << _fieldOfView << '\n';
-#endif
+    logging::debug(std::format("Camera field of view: {}", _fieldOfView));
 }
 
 void Camera::translate(const glm::vec3& translation)
 {
     _position += translation;
-#ifdef _DEBUG
-    std::cerr << "Camera position: (" << _position.x << ", " << _position.y << ", " << _position.z
-              << ")\n";
-#endif
+    logging::debug(
+        std::format("Camera position: ({}, {}, {})", _position.x, _position.y, _position.z)
+    );
 }
 
 void Camera::rotate(float yaw, float pitch)
@@ -129,7 +127,5 @@ void Camera::updateDirections()
     _front = glm::normalize(_front);
     _right = glm::normalize(glm::cross(_front, _worldUp));
     _up = glm::normalize(glm::cross(_right, _front));
-#ifdef _DEBUG
-    std::cerr << "Camera front: (" << _front.x << ", " << _front.y << ", " << _front.z << ")\n";
-#endif
+    logging::debug(std::format("Camera front: ({}, {}, {})", _front.x, _front.y, _front.z));
 }
