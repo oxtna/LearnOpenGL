@@ -44,7 +44,9 @@ int main()
 #ifdef _DEBUG
     auto& logger = logging::Logger::Instance();
     logging::ConsoleSink consoleSink{};
+    logging::FileSink fileSink{"debug.log"};
     logger.addSink(logging::Severity::Debug, &consoleSink);
+    logger.addSink(logging::Severity::Debug, &fileSink);
 #endif
     glfwInit();
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
