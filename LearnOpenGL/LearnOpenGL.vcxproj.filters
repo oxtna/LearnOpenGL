@@ -27,7 +27,7 @@
     <ClCompile Include="src\camera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\time.cpp">
+    <ClCompile Include="src\timer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -46,7 +46,7 @@
     <ClInclude Include="src\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\time.h">
+    <ClInclude Include="src\timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

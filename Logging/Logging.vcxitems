@@ -5,7 +5,8 @@
     <HasSharedItems>true</HasSharedItems>
     <ItemsProjectGuid>{8cfbe616-f6ac-4048-bf73-8fe3ff775bb3}</ItemsProjectGuid>
     <ItemsProjectName>Logging</ItemsProjectName>
-    <ItemsRootNamespace>logging</ItemsRootNamespace>
+    <ItemsRootNamespace>
+    </ItemsRootNamespace>
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>

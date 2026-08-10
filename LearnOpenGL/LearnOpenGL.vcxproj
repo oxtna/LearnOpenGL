@@ -91,7 +91,7 @@
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\time.cpp" />
+    <ClCompile Include="src\timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\main.vert.glsl" />
@@ -102,7 +102,7 @@
   <ItemGroup>
     <ClInclude Include="src\camera.h" />
     <ClInclude Include="src\shader.h" />
-    <ClInclude Include="src\time.h" />
+    <ClInclude Include="src\timer.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\container.jpg" />

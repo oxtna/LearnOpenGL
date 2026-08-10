@@ -32,9 +32,6 @@ Camera::Camera(
     updateDirections();
 }
 
-Camera::~Camera()
-{}
-
 glm::vec3 Camera::position() const
 {
     return _position;

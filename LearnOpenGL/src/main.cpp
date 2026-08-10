@@ -2,7 +2,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 
@@ -17,7 +16,7 @@
 #include <sstream>
 #include <cmath>
 
-#include "time.h"
+#include "timer.h"
 #include "camera.h"
 #include "shader.h"
 
@@ -37,7 +36,7 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int modifiers);
 void cursorPosCallback(GLFWwindow* window, double xPosition, double yPosition);
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, const Timer& timer);
 
 int main()
 {
@@ -75,7 +74,7 @@ int main()
 
     glEnable(GL_DEPTH_TEST);
 
-    Shader shader("main.vert.glsl", "main.frag.glsl");
+    Shader shader("res/main.vert.glsl", "res/main.frag.glsl");
 
     // Vertex data layout
     // +-----------------+-----------------------------+
@@ -154,7 +153,7 @@ int main()
 
     int width, height, colorChannelCount;
     stbi_set_flip_vertically_on_load(1);
-    auto data = stbi_load("container.jpg", &width, &height, &colorChannelCount, 0);
+    auto data = stbi_load("res/container.jpg", &width, &height, &colorChannelCount, 0);
 
     GLuint texture;
     glGenTextures(1, &texture);
@@ -175,17 +174,19 @@ int main()
 
     stbi_image_free(data);
 
+    Timer timer{};
+
     while (!glfwWindowShouldClose(window))
     {
-        processInput(window);
+        processInput(window, timer);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        Time::update();
+        timer.update();
 
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, Time::time() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
+        model = glm::rotate(model, timer.time() * glm::radians(50.0f), glm::vec3(0.5f, 1.0f, 0.0f));
         glm::mat4 view = camera.getViewMatrix();
         glm::mat4 projection = glm::perspective(
             glm::radians(camera.fieldOfView()),
@@ -254,26 +255,32 @@ void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
     camera.fieldOfView(camera.fieldOfView() - static_cast<float>(yOffset));
 }
 
-void processInput(GLFWwindow* window)
+void processInput(GLFWwindow* window, const Timer& timer)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, 1);
+        return;
     }
+    glm::vec3 cameraTranslation{};
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        camera.translate(camera.front() * camera.Speed * Time::deltaTime());
+        cameraTranslation += camera.front();
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        camera.translate(-camera.front() * camera.Speed * Time::deltaTime());
+        cameraTranslation -= camera.front();
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        camera.translate(-camera.right() * camera.Speed * Time::deltaTime());
+        cameraTranslation -= camera.right();
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        camera.translate(camera.right() * camera.Speed * Time::deltaTime());
+        cameraTranslation += camera.right();
+    }
+    if (cameraTranslation.x || cameraTranslation.y || cameraTranslation.z)
+    {
+        camera.translate(cameraTranslation * camera.Speed * timer.deltaTime());
     }
 }

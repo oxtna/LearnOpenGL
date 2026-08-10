@@ -19,7 +19,7 @@ class Camera
         const glm::vec3& position, const glm::vec3& worldUp, float yaw, float pitch,
         float fieldOfView
     );
-    ~Camera();
+    ~Camera() = default;
 
     glm::vec3 position() const;
     glm::vec3 front() const;
