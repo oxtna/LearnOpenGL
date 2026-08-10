@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{8cfbe616-f6ac-4048-bf73-8fe3ff775bb3}</ItemsProjectGuid>
+    <ItemsProjectName>Logging</ItemsProjectName>
+    <ItemsRootNamespace>logging</ItemsRootNamespace>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)logging\logger.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)logging\logs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)logging\notifier.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)logging\observer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)logging\severity.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)logging\sinks.h" />
+  </ItemGroup>
+</Project>
