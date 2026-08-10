@@ -41,7 +41,7 @@ BraceWrapping:
   AfterEnum: true
   AfterUnion: true
   AfterFunction: true
-  SplitEmptyFunction: false
+  SplitEmptyFunction: true
   SplitEmptyRecord: true
   BeforeLambdaBody: false
   BeforeWhile: true

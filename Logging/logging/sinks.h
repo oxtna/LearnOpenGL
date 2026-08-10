@@ -18,7 +18,7 @@ class BaseSink : public interface::Observer<Severity>
 class ConsoleSink : public BaseSink
 {
   public:
-    void receive(Severity key, std::string_view message) override { std::cerr << message << '\n'; }
+    void receive(Severity key, std::string_view message) override { std::cerr << message; }
 };
 
 class FileSink : public BaseSink
@@ -29,7 +29,7 @@ class FileSink : public BaseSink
 
     void receive(Severity key, std::string_view message) override
     {
-        _ofstream << message << '\n';
+        _ofstream << message;
         _ofstream.flush();
     }
 

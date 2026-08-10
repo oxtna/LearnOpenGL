@@ -45,7 +45,7 @@ class NotifierComponent : public interface::Notifier<T>
 
     void notify(T key, std::string_view message) override
     {
-        for (auto it = _observers.begin(), end = _observers.upper_bound(key); it != end; it++)
+        for (auto it = _observers.lower_bound(key), end = _observers.end(); it != end; it++)
         {
             for (auto observer : it->second)
             {
