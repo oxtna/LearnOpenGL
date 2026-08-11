@@ -11,10 +11,9 @@
 #include <logging/sinks.h>
 
 #include <iostream>
-#include <fstream>
 #include <string>
 #include <sstream>
-#include <cmath>
+#include <format>
 
 #include "timer.h"
 #include "camera.h"
@@ -36,7 +35,13 @@ void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseButtonCallback(GLFWwindow* window, int button, int action, int modifiers);
 void cursorPosCallback(GLFWwindow* window, double xPosition, double yPosition);
 void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+
 void processInput(GLFWwindow* window, const Timer& timer);
+
+void APIENTRY glLogDebugInfo(
+    GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message,
+    const void* userParam
+);
 
 int main()
 {
@@ -47,11 +52,14 @@ int main()
     logger.addSink(logging::Severity::Debug, &consoleSink);
     logger.addSink(logging::Severity::Debug, &fileSink);
 #endif
+
     glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
+#ifdef _DEBUG
+    glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, true);
+#endif
     GLFWwindow* window =
         glfwCreateWindow(DEFAULT_WIDTH, DEFAULT_HEIGHT, "LearnOpenGL", nullptr, nullptr);
     if (window == nullptr)
@@ -72,6 +80,18 @@ int main()
         glfwTerminate();
         return -1;
     }
+
+#ifdef _DEBUG
+    GLint contextFlags{};
+    glGetIntegerv(GL_CONTEXT_FLAGS, &contextFlags);
+    if (contextFlags & GL_CONTEXT_FLAG_DEBUG_BIT)
+    {
+        glEnable(GL_DEBUG_OUTPUT);
+        glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+        glDebugMessageCallback(glLogDebugInfo, nullptr);
+        glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, nullptr, GL_TRUE);
+    }
+#endif
 
     glEnable(GL_DEPTH_TEST);
 
@@ -284,4 +304,93 @@ void processInput(GLFWwindow* window, const Timer& timer)
     {
         camera.translate(cameraTranslation * camera.Speed * timer.deltaTime());
     }
+}
+
+void APIENTRY glLogDebugInfo(
+    GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message,
+    const void* userParam
+)
+{
+    std::stringstream debugInfo{};
+
+    switch (source)
+    {
+    case GL_DEBUG_SOURCE_API:
+        debugInfo << "[GL::Source::API]";
+        break;
+    case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+        debugInfo << "[GL::Source::WindowSystem]";
+        break;
+    case GL_DEBUG_SOURCE_SHADER_COMPILER:
+        debugInfo << "[GL::Source::ShaderCompiler]";
+        break;
+    case GL_DEBUG_SOURCE_THIRD_PARTY:
+        debugInfo << "[GL::Source::ThirdParty]";
+        break;
+    case GL_DEBUG_SOURCE_APPLICATION:
+        debugInfo << "[GL::Source::Application]";
+        break;
+    case GL_DEBUG_SOURCE_OTHER:
+        debugInfo << "[GL::Source::Other]";
+        break;
+    default:
+        debugInfo << std::format("[GL::Source::Unkown({})]", source);
+        break;
+    }
+
+    switch (type)
+    {
+    case GL_DEBUG_TYPE_ERROR:
+        debugInfo << "[GL::Type::Error]";
+        break;
+    case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+        debugInfo << "[GL::Type::DeprecatedBehavior]";
+        break;
+    case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+        debugInfo << "[GL::Type::UndefinedBehavior]";
+        break;
+    case GL_DEBUG_TYPE_PORTABILITY:
+        debugInfo << "[GL::Type::Portability]";
+        break;
+    case GL_DEBUG_TYPE_PERFORMANCE:
+        debugInfo << "[GL::Type::Performance]";
+        break;
+    case GL_DEBUG_TYPE_MARKER:
+        debugInfo << "[GL::Type::Marker]";
+        break;
+    case GL_DEBUG_TYPE_PUSH_GROUP:
+        debugInfo << "[GL::Type::PushGroup]";
+        break;
+    case GL_DEBUG_TYPE_POP_GROUP:
+        debugInfo << "[GL::Type::PopGroup]";
+        break;
+    case GL_DEBUG_TYPE_OTHER:
+        debugInfo << "[GL::Type::Other]";
+        break;
+    default:
+        debugInfo << std::format("[GL::Type::Unknown({})]", type);
+        break;
+    }
+
+    switch (severity)
+    {
+    case GL_DEBUG_SEVERITY_HIGH:
+        debugInfo << "[GL::Severity::High]";
+        break;
+    case GL_DEBUG_SEVERITY_MEDIUM:
+        debugInfo << "[GL::Severity::Medium]";
+        break;
+    case GL_DEBUG_SEVERITY_LOW:
+        debugInfo << "[GL::Severity::Low]";
+        break;
+    case GL_DEBUG_SEVERITY_NOTIFICATION:
+        debugInfo << "[GL::Severity::Notification]";
+        break;
+    default:
+        debugInfo << std::format("[GL::Severity::Unknown({})]", severity);
+        break;
+    }
+
+    debugInfo << std::format(" Debug Message ({}): ", id) << message;
+    logging::debug(debugInfo.view());
 }
